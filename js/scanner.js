@@ -97,8 +97,15 @@ async function handleScan() {
         await new Promise(r => setTimeout(r, 100));
         
         // Call the existing MRZ extraction logic from ug-id-parser.js
-        // We pass the full canvas and let it find the MRZ automatically (cropRegion = null)
-        const parsedRecord = await parseUgandaID(hiddenCanvas, null);
+        // We pass the exact crop region matching the target box (top 60%, left 10%, width 80%, height 25%)
+        // This makes Tesseract immensely faster because it only scans the MRZ text, not the whole frame!
+        const cropRegion = {
+            x: Math.floor(hiddenCanvas.width * 0.10),
+            y: Math.floor(hiddenCanvas.height * 0.60),
+            w: Math.floor(hiddenCanvas.width * 0.80),
+            h: Math.floor(hiddenCanvas.height * 0.25)
+        };
+        const parsedRecord = await parseUgandaID(hiddenCanvas, cropRegion);
         
         populateForm(parsedRecord);
         
